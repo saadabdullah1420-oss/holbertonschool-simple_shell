@@ -1,0 +1,76 @@
+#include "shell.h"
+
+/**
+ * display_prompt - Displays the prompt symbol if in interactive mode
+ */
+void display_prompt(void)
+{
+	if (isatty(STDIN_FILENO))
+		write(STDOUT_FILENO, "$ ", 2);
+}
+
+/**
+ * read_command - Reads a line of input from stdin using getline
+ *
+ * Return: Pointer to the buffer containing the line, or NULL on EOF/error
+ */
+char *read_command(void)
+{
+	char *line = NULL;
+	size_t len = 0;
+	ssize_t nread;
+
+	nread = getline(&line, &len, stdin);
+	if (nread == -1)
+	{
+		free(line);
+		return (NULL);
+	}
+
+	return (line);
+}
+
+/**
+ * execute_command - Fork and execute a given command
+ * @line: Command line input
+ * @prog_name: Name of the executable (argv[0])
+ * @line_count: Current command line number for error reporting
+ */
+void execute_command(char *line, char *prog_name, unsigned int line_count)
+{
+	pid_t pid;
+	int status;
+	char *args[2];
+	size_t len;
+
+	len = strlen(line);
+	if (len > 0 && line[len - 1] == '\n')
+		line[len - 1] = '\0';
+
+	if (line[0] == '\0')
+		return;
+
+	args[0] = line;
+	args[1] = NULL;
+
+	pid = fork();
+	if (pid == -1)
+	{
+		perror("Error");
+		return;
+	}
+
+	if (pid == 0)
+	{
+		if (execve(args[0], args, environ) == -1)
+		{
+			fprintf(stderr, "%s: %u: %s: not found\n",
+				prog_name, line_count, args[0]);
+			exit(127);
+		}
+	}
+	else
+	{
+		wait(&status);
+	}
+}

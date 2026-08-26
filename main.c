@@ -1,59 +1,36 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <string.h>
+#include "shell.h"
 
-extern char **environ;
-
-int main(void)
+/**
+ * main - entry point of the simple shell
+ * @argc: argument count
+ * @argv: argument vector, argv[0] is the shell's invocation name
+ *
+ * Return: 0 on success
+ */
+int main(int argc, char *argv[])
 {
-	char *line = NULL;
-	size_t len = 0;
-	ssize_t read;
-	pid_t pid;
-	char *argv[2];
+	char *line;
+	unsigned int line_count = 0;
+
+	(void)argc;
 
 	while (1)
 	{
-		printf("#cisfun$ ");
-		fflush(stdout);
+		display_prompt();
 
-		read = getline(&line, &len, stdin);
-
-		if (read == -1)
+		line = read_command();
+		if (line == NULL)
 		{
-			printf("\n");
-			break;
+			if (isatty(STDIN_FILENO))
+				write(STDOUT_FILENO, "\n", 1);
+			exit(0);
 		}
 
-		line[strcspn(line, "\n")] = '\0';
+		line_count++;
+		execute_command(line, argv[0], line_count);
 
-		if (line[0] == '\0')
-			continue;
-
-		argv[0] = line;
-		argv[1] = NULL;
-
-		pid = fork();
-
-		if (pid == -1)
-		{
-			perror("fork");
-			continue;
-		}
-
-		if (pid == 0)
-		{
-			execve(argv[0], argv, environ);
-			perror("./hsh");
-			exit(127);
-		}
-
-		wait(NULL);
+		free(line);
 	}
 
-	free(line);
 	return (0);
 }

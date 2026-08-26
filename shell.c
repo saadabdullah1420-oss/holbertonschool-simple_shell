@@ -31,7 +31,7 @@ char *read_command(void)
 }
 
 /**
- * execute_command - Tokenizes input and executes command with arguments
+ * execute_command - Tokenizes input line and executes command with args
  * @line: Command line input
  * @prog_name: Name of the executable (argv[0])
  * @line_count: Current command line number for error reporting

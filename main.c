@@ -1,34 +1,28 @@
 #include "shell.h"
 
 /**
- * main - entry point of the simple shell
- * @argc: argument count
- * @argv: argument vector, argv[0] is the shell's invocation name
+ * main - Entry point for simple shell
+ * @ac: Argument count
+ * @av: Argument vector
  *
  * Return: 0 on success
  */
-int main(int argc, char *argv[])
+int main(int ac, char **av)
 {
 	char *line;
 	unsigned int line_count = 0;
 
-	(void)argc;
+	(void)ac;
 
 	while (1)
 	{
+		line_count++;
 		display_prompt();
-
 		line = read_command();
 		if (line == NULL)
-		{
-			if (isatty(STDIN_FILENO))
-				write(STDOUT_FILENO, "\n", 1);
-			exit(0);
-		}
+			break;
 
-		line_count++;
-		execute_command(line, argv[0], line_count);
-
+		execute_command(line, av[0], line_count);
 		free(line);
 	}
 

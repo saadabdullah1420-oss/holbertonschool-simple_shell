@@ -41,16 +41,16 @@ void execute_command(char *line, char *prog_name, unsigned int line_count)
 	pid_t pid;
 	int status;
 	char *args[2];
-	size_t len;
+	char *command;
 
-	len = strlen(line);
-	if (len > 0 && line[len - 1] == '\n')
-		line[len - 1] = '\0';
+	/* التخلص من المسافات وسطر السطر الجديد \n \t \r */
+	command = strtok(line, " \t\r\n");
 
-	if (line[0] == '\0')
+	/* إذا كان السطر فارغاً أو يحتوي مسافات فقط يتم تجاهله */
+	if (command == NULL)
 		return;
 
-	args[0] = line;
+	args[0] = command;
 	args[1] = NULL;
 
 	pid = fork();

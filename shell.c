@@ -31,7 +31,7 @@ char *read_command(void)
 }
 
 /**
- * execute_command - Fork and execute a given command
+ * execute_command - Tokenizes input and executes command with arguments
  * @line: Command line input
  * @prog_name: Name of the executable (argv[0])
  * @line_count: Current command line number for error reporting
@@ -39,19 +39,20 @@ char *read_command(void)
 void execute_command(char *line, char *prog_name, unsigned int line_count)
 {
 	pid_t pid;
-	int status;
-	char *args[2];
-	char *command;
+	int status, i = 0;
+	char *args[1024];
+	char *token;
 
-	/* التخلص من المسافات وسطر السطر الجديد \n \t \r */
-	command = strtok(line, " \t\r\n");
+	token = strtok(line, " \t\r\n");
+	while (token != NULL && i < 1023)
+	{
+		args[i++] = token;
+		token = strtok(NULL, " \t\r\n");
+	}
+	args[i] = NULL;
 
-	/* إذا كان السطر فارغاً أو يحتوي مسافات فقط يتم تجاهله */
-	if (command == NULL)
+	if (args[0] == NULL)
 		return;
-
-	args[0] = command;
-	args[1] = NULL;
 
 	pid = fork();
 	if (pid == -1)

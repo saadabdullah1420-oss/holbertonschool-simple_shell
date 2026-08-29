@@ -39,9 +39,10 @@ char *read_command(void)
 void execute_command(char *line, char *prog_name, unsigned int line_count)
 {
 	pid_t pid;
-	int status, i = 0;
+	int status;
+	int i = 0;
 	char *args[1024];
-	char *token;
+	char *token, *full_path;
 
 	token = strtok(line, " \t\r\n");
 	while (token != NULL && i < 1023)
@@ -54,24 +55,34 @@ void execute_command(char *line, char *prog_name, unsigned int line_count)
 	if (args[0] == NULL)
 		return;
 
+	full_path = find_path(args[0]);
+	if (full_path == NULL)
+	{
+		fprintf(stderr, "%s: %u: %s: not found\n",
+			prog_name, line_count, args[0]);
+		return;
+	}
+
 	pid = fork();
 	if (pid == -1)
 	{
 		perror("Error");
+		free(full_path);
 		return;
 	}
 
 	if (pid == 0)
 	{
-		if (execve(args[0], args, environ) == -1)
+		if (execve(full_path, args, environ) == -1)
 		{
-			fprintf(stderr, "%s: %u: %s: not found\n",
-				prog_name, line_count, args[0]);
-			exit(127);
+			perror(prog_name);
+			free(full_path);
+			_exit(127);
 		}
 	}
 	else
 	{
 		wait(&status);
+		free(full_path);
 	}
 }

@@ -30,19 +30,18 @@ char *read_command(void)
 }
 
 /**
- * execute_command - Tokenizes input line and executes command with args
+ * execute_command - Resolves PATH, ensures safety checks, and runs processes
  * @line: Command line input
  * @prog_name: Name of the executable (argv[0])
  * @line_count: Current command line number for error reporting
- * Return: Exit status (127 on command not found, or command's exit status)
  */
-int execute_command(char *line, char *prog_name, unsigned int line_count)
+void execute_command(char *line, char *prog_name, unsigned int line_count)
 {
 	pid_t pid;
 	int status, i = 0;
 	char *args[1024];
 	char *token;
-	char *executable;
+	char *executable = NULL;
 
 	token = strtok(line, " \t\r\n");
 	while (token != NULL && i < 1023)
@@ -53,14 +52,23 @@ int execute_command(char *line, char *prog_name, unsigned int line_count)
 	args[i] = NULL;
 
 	if (args[0] == NULL)
-		return (0);
+		return;
 
-	executable = find_path(args[0]);
-	if (executable == NULL)
+	/* Check if command has a slash or exists in PATH *before* forking */
+	if (strchr(args[0], '/') != NULL)
 	{
-		fprintf(stderr, "%s: %u: %s: not found\n",
-			prog_name, line_count, args[0]);
-		return (127); /* Return 127 when command is not found */
+		if (access(args[0], X_OK) == 0)
+			executable = strdup(args[0]);
+	}
+	else
+	{
+		executable = find_path(args[0]);
+	}
+
+	if (!executable)
+	{
+		fprintf(stderr, "%s: %u: %s: not found\n", prog_name, line_count, args[0]);
+		return; /* fork() is successfully avoided here! */
 	}
 
 	pid = fork();
@@ -68,7 +76,7 @@ int execute_command(char *line, char *prog_name, unsigned int line_count)
 	{
 		perror("Error");
 		free(executable);
-		return (1);
+		return;
 	}
 
 	if (pid == 0)
@@ -84,8 +92,5 @@ int execute_command(char *line, char *prog_name, unsigned int line_count)
 	{
 		wait(&status);
 		free(executable);
-		if (WIFEXITED(status))
-			return (WEXITSTATUS(status));
 	}
-	return (0);
 }

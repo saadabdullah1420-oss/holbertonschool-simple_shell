@@ -14,7 +14,7 @@ void display_prompt(void);
 char *read_command(void);
 void execute_command(char *line, char *prog_name, unsigned int line_count);
 
-char *copy_string(char *src);
+char *_getenv(const char *name);
 char *find_path(char *command);
 
 #endif /* SHELL_H */

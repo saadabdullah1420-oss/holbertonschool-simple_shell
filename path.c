@@ -1,66 +1,67 @@
 #include "shell.h"
 
 /**
- * copy_string - Allocates memory and copies a string into it
- * @src: The string to copy
- *
- * Return: Malloc'd copy of src, or NULL on failure
+ * _getenv - Gets the value of an environmental variable
+ * @name: Name of the environment variable
+ * Return: Pointer to value string, or NULL if not found
  */
-char *copy_string(char *src)
+char *_getenv(const char *name)
 {
-	char *dest;
+	int i, j;
 
-	dest = malloc(strlen(src) + 1);
-	if (dest == NULL)
+	if (!name || !environ)
 		return (NULL);
-	strcpy(dest, src);
-	return (dest);
+
+	for (i = 0; environ[i]; i++)
+	{
+		for (j = 0; environ[i][j] && name[j] && environ[i][j] == name[j]; j++)
+			;
+		if (environ[i][j] == '=' && name[j] == '\0')
+			return (&environ[i][j + 1]);
+	}
+	return (NULL);
 }
 
 /**
- * find_path - Searches PATH directories for an executable command
- * @command: The command to search for (may or may not contain '/')
- *
- * Return: Malloc'd string with the full usable path, or NULL if not found
+ * find_path - Finds the full path of a command using the PATH variable
+ * @command: Command name entered by user
+ * Return: Allocated full path string, or NULL if not found
  */
 char *find_path(char *command)
 {
-	char *path_env, *path_copy, *dir, *full_path;
-	size_t len;
+	char *path_env, *path_copy, *token, *full_path;
+	struct stat st;
+	int dir_len, cmd_len;
 
-	if (strchr(command, '/') != NULL)
+	if (!command)
+		return (NULL);
+	if (stat(command, &st) == 0 && (command[0] == '/' || command[0] == '.'))
+		return (strdup(command));
+
+	path_env = _getenv("PATH");
+	if (!path_env)
+		return (NULL);
+
+	path_copy = strdup(path_env);
+	cmd_len = strlen(command);
+	token = strtok(path_copy, ":");
+	while (token)
 	{
-		if (access(command, X_OK) == 0)
-			return (copy_string(command));
-		return (NULL);
-	}
-
-	path_env = getenv("PATH");
-	if (path_env == NULL)
-		return (NULL);
-
-	path_copy = copy_string(path_env);
-	if (path_copy == NULL)
-		return (NULL);
-
-	dir = strtok(path_copy, ":");
-	while (dir != NULL)
-	{
-		len = strlen(dir) + strlen(command) + 2;
-		full_path = malloc(len);
-		if (full_path == NULL)
+		dir_len = strlen(token);
+		full_path = malloc(dir_len + cmd_len + 2);
+		if (!full_path)
 		{
 			free(path_copy);
 			return (NULL);
 		}
-		sprintf(full_path, "%s/%s", dir, command);
-		if (access(full_path, X_OK) == 0)
+		sprintf(full_path, "%s/%s", token, command);
+		if (stat(full_path, &st) == 0)
 		{
 			free(path_copy);
 			return (full_path);
 		}
 		free(full_path);
-		dir = strtok(NULL, ":");
+		token = strtok(NULL, ":");
 	}
 	free(path_copy);
 	return (NULL);

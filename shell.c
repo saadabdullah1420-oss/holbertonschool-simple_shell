@@ -11,7 +11,6 @@ void display_prompt(void)
 
 /**
  * read_command - Reads a line of input from stdin using getline
- *
  * Return: Pointer to the buffer containing the line, or NULL on EOF/error
  */
 char *read_command(void)
@@ -31,7 +30,7 @@ char *read_command(void)
 }
 
 /**
- * execute_command - Tokenizes input line and executes command with args
+ * execute_command - Resolves PATH, ensures safety checks, and runs processes
  * @line: Command line input
  * @prog_name: Name of the executable (argv[0])
  * @line_count: Current command line number for error reporting
@@ -39,10 +38,10 @@ char *read_command(void)
 void execute_command(char *line, char *prog_name, unsigned int line_count)
 {
 	pid_t pid;
-	int status;
-	int i = 0;
+	int status, i = 0;
 	char *args[1024];
-	char *token, *full_path;
+	char *token;
+	char *executable = NULL;
 
 	token = strtok(line, " \t\r\n");
 	while (token != NULL && i < 1023)
@@ -55,11 +54,19 @@ void execute_command(char *line, char *prog_name, unsigned int line_count)
 	if (args[0] == NULL)
 		return;
 
-	full_path = find_path(args[0]);
-	if (full_path == NULL)
+	if (strchr(args[0], '/') != NULL)
 	{
-		fprintf(stderr, "%s: %u: %s: not found\n",
-			prog_name, line_count, args[0]);
+		if (access(args[0], X_OK) == 0)
+			executable = strdup(args[0]);
+	}
+	else
+	{
+		executable = find_path(args[0]);
+	}
+
+	if (!executable)
+	{
+		fprintf(stderr, "%s: %u: %s: not found\n", prog_name, line_count, args[0]);
 		return;
 	}
 
@@ -67,22 +74,22 @@ void execute_command(char *line, char *prog_name, unsigned int line_count)
 	if (pid == -1)
 	{
 		perror("Error");
-		free(full_path);
+		free(executable);
 		return;
 	}
 
 	if (pid == 0)
 	{
-		if (execve(full_path, args, environ) == -1)
+		if (execve(executable, args, environ) == -1)
 		{
 			perror(prog_name);
-			free(full_path);
+			free(executable);
 			_exit(127);
 		}
 	}
 	else
 	{
 		wait(&status);
-		free(full_path);
+		free(executable);
 	}
 }

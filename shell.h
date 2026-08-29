@@ -7,7 +7,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-
+#include <sys/stat.h>
 extern char **environ;
 
 void display_prompt(void);

@@ -11,6 +11,7 @@ int main(int ac, char **av)
 {
 	char *line;
 	unsigned int line_count = 0;
+	int last_status = 0;
 
 	(void)ac;
 
@@ -22,9 +23,9 @@ int main(int ac, char **av)
 		if (line == NULL)
 			break;
 
-		execute_command(line, av[0], line_count);
+		last_status = execute_command(line, av[0], line_count);
 		free(line);
 	}
 
-	return (0);
+	return (last_status);
 }

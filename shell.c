@@ -35,7 +35,7 @@ char *read_command(void)
  * @prog_name: Name of the executable (argv[0])
  * @line_count: Current command line number for error reporting
  */
-void execute_command(char *line, char *prog_name, unsigned int line_count)
+int execute_command(char *line, char *prog_name, unsigned int line_count)
 {
 	pid_t pid;
 	int status, i = 0;
@@ -52,9 +52,8 @@ void execute_command(char *line, char *prog_name, unsigned int line_count)
 	args[i] = NULL;
 
 	if (args[0] == NULL)
-		return;
+		return (0);
 
-	/* Check if command has a slash or exists in PATH *before* forking */
 	if (strchr(args[0], '/') != NULL)
 	{
 		if (access(args[0], X_OK) == 0)
@@ -68,7 +67,7 @@ void execute_command(char *line, char *prog_name, unsigned int line_count)
 	if (!executable)
 	{
 		fprintf(stderr, "%s: %u: %s: not found\n", prog_name, line_count, args[0]);
-		return; /* fork() is successfully avoided here! */
+		return (127);
 	}
 
 	pid = fork();
@@ -76,7 +75,7 @@ void execute_command(char *line, char *prog_name, unsigned int line_count)
 	{
 		perror("Error");
 		free(executable);
-		return;
+		return (1);
 	}
 
 	if (pid == 0)
@@ -92,5 +91,8 @@ void execute_command(char *line, char *prog_name, unsigned int line_count)
 	{
 		wait(&status);
 		free(executable);
+		if (WIFEXITED(status))
+			return (WEXITSTATUS(status));
 	}
+	return (0);
 }

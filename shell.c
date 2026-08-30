@@ -96,3 +96,20 @@ int execute_command(char *line, char *prog_name, unsigned int line_count)
 	}
 	return (0);
 }
+
+/**
+ * exit_builtin - Handles the exit built-in command and frees resources
+ * @args: Array of tokenized arguments
+ * @line: Allocated input line to be freed
+ * @last_status: Exit status of the previous command
+ * Return: 1 if exit was handled (terminates program), 0 otherwise
+ */
+int exit_builtin(char **args, char *line, int last_status)
+{
+	if (args[0] && strcmp(args[0], "exit") == 0)
+	{
+		free(line);
+		exit(last_status);
+	}
+	return (0);
+}

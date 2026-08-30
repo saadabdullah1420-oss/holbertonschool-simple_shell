@@ -17,5 +17,5 @@ int exit_builtin(char **args, char *line, int last_status);
 
 char *_getenv(const char *name);
 char *find_path(char *command);
-
+int env_builtin(char **args);
 #endif /* SHELL_H */

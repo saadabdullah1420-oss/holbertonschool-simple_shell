@@ -29,44 +29,6 @@ char *read_command(void)
 }
 
 /**
- * env_builtin - Prints the current environment variables
- * @args: Array of tokenized arguments
- * Return: 1 if env was handled, 0 otherwise
- */
-int env_builtin(char **args)
-{
-	int i = 0;
-
-	if (args[0] && strcmp(args[0], "env") == 0)
-	{
-		while (environ[i])
-		{
-			printf("%s\n", environ[i]);
-			i++;
-		}
-		return (1);
-	}
-	return (0);
-}
-
-/**
- * exit_builtin - Handles the exit built-in command and frees resources
- * @args: Array of tokenized arguments
- * @line: Allocated input line to be freed
- * @last_status: Exit status of the previous command
- * Return: 1 if exit was handled (terminates program), 0 otherwise
- */
-int exit_builtin(char **args, char *line, int last_status)
-{
-	if (args[0] && strcmp(args[0], "exit") == 0)
-	{
-		free(line);
-		exit(last_status);
-	}
-	return (0);
-}
-
-/**
  * run_execve - Helper to fork and execute a program
  * @executable: Full path of the binary
  * @args: Arguments array

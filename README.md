@@ -41,6 +41,6 @@ Example:
 
 Authors:
 
-Saud Sultan Alhaqbani
-Saad Abdullah Bin Saeedan
+- Saud Sultan Alhaqbani
+- Saad Abdullah Bin Saeedan
 

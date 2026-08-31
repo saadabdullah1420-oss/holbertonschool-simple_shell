@@ -20,9 +20,9 @@ It uses `wait` to wait for the child process.
 
 To compile:
 
-```bash
+
 gcc -Wall -Werror -Wextra -pedantic -std=gnu89 *.c -o hsh
-```
+
 
 To run:
 

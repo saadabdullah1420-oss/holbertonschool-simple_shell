@@ -1,20 +1,30 @@
 # Simple Shell
 
-## Description
-
-This project is a simple UNIX command line interpreter written in C.
+This project is a simple UNIX shell written in C.
 
 The shell reads commands from the user and executes them.
 
-## Compilation
+It displays a prompt and waits for the user to enter a command.
+
+It can execute commands with arguments.
+
+It can find commands using the PATH environment variable.
+
+It works in interactive and non-interactive mode.
+
+It uses `fork` to create a new process.
+
+It uses `execve` to execute commands.
+
+It uses `wait` to wait for the child process.
+
+To compile:
 
 ```bash
 gcc -Wall -Werror -Wextra -pedantic -std=gnu89 *.c -o hsh
 ```
 
-## Usage
-
-Run the shell:
+To run:
 
 ```bash
 ./hsh
@@ -29,13 +39,7 @@ Example:
 ($) exit
 ```
 
-The shell also works in non-interactive mode:
-
-```bash
-echo "/bin/ls" | ./hsh
-```
-
-## Authors
+Authors:
 
 Saud Sultan Alhaqbani
 Saad Abdullah Bin Saeedan

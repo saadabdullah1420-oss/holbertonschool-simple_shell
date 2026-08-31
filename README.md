@@ -26,18 +26,16 @@ gcc -Wall -Werror -Wextra -pedantic -std=gnu89 *.c -o hsh
 
 To run:
 
-```bash
 ./hsh
-```
+
 
 Example:
 
-```text
-($) ls
-($) pwd
-($) echo Hello
-($) exit
-```
+- ls
+- pwd
+- echo Hello
+- exit
+
 
 Authors:
 

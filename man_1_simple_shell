@@ -1,0 +1,110 @@
+.TH HSH 1 "2026" "version 1.0" "Simple Shell Manual"
+.SH NAME
+hsh \- a simple UNIX command interpreter
+.SH SYNOPSIS
+.B hsh
+.br
+.B echo
+.RI [ command ]
+.B |
+.B hsh
+.SH DESCRIPTION
+.B hsh
+is a simple command interpreter (shell), similar in spirit to
+.BR sh (1).
+It reads commands, either from an interactive terminal or from
+standard input, and executes them.
+.PP
+When run with standard input attached to a terminal,
+.B hsh
+displays a prompt,
+.RB ( "$ " ),
+and waits for a command. When standard input is not a terminal
+(for example, when piped from another program), no prompt is
+displayed, and commands are read and executed one line at a time
+until end-of-file.
+.SH BUILTIN COMMANDS
+.TP
+.B env
+Prints the current environment variables, one per line.
+.TP
+.B exit
+Exits the shell. Any memory allocated by the shell is freed before
+exiting.
+.SH COMMAND EXECUTION
+For any command that is not a builtin,
+.B hsh
+searches for an executable as follows:
+.IP \(bu 4
+If the command contains a slash
+.RB ( / ),
+it is treated as a relative or absolute path and executed directly if
+it is accessible and executable.
+.IP \(bu 4
+Otherwise, the directories listed in the
+.B PATH
+environment variable are searched, in order, for an executable file
+matching the command name.
+.PP
+Once found, the shell creates a child process with
+.BR fork (2)
+and runs the program with
+.BR execve (2),
+passing it the current environment. The parent process waits for the
+child to terminate with
+.BR wait (2)
+and returns the child's exit status.
+.SH EXIT STATUS
+.B hsh
+returns the exit status of the last command executed. If a command
+is not found, the exit status is set to 127. If a call to
+.BR fork (2)
+fails, the exit status is 1.
+.SH ERRORS
+If a command cannot be found or executed, an error is printed to
+standard error in the form:
+.RS
+.I program_name: line_number: command: not found
+.RE
+.PP
+where
+.I program_name
+is the name the shell was invoked with (its
+.IR argv[0] ),
+and
+.I line_number
+is the number of the command line that produced the error.
+.SH EXAMPLES
+Interactive use:
+.RS
+.nf
+$ ./hsh
+$ /bin/ls
+hsh main.c shell.c
+$ exit
+$
+.fi
+.RE
+.PP
+Non-interactive use:
+.RS
+.nf
+$ echo "/bin/ls" | ./hsh
+hsh main.c shell.c
+.fi
+.RE
+.SH BUGS
+Does not support logical operators
+.RB ( "&&" ,
+.BR "||" ),
+pipes, I/O redirection, comments, or built-ins beyond
+.B env
+and
+.BR exit .
+.SH AUTHOR
+See the AUTHORS file at the root of the project repository.
+.SH SEE ALSO
+.BR sh (1),
+.BR execve (2),
+.BR fork (2),
+.BR wait (2)
